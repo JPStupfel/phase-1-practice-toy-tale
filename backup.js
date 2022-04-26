@@ -1,5 +1,5 @@
 let addToy = false;
-//on load, build the form and toy cards
+
 document.addEventListener("DOMContentLoaded", ()=> {formFunctionality(); handleToyCards()} )
 
 //create and append the form to add new toys
@@ -16,61 +16,45 @@ function formFunctionality() {
       toyFormContainer.style.display = "none";
     }
   })
-  //get the form, prevent default and handle toy sub
-  const toyForm = document.querySelector('form.add-toy-form')
-  toyForm.addEventListener('submit',(event)=>{event.preventDefault();handleToySub() })
- 
-}
-
-
-
-const handleToySub = ()=>{
-  //take the value
+  //take name and url and return a formatted card object
+  const handleToySub = ()=>{
     let name = document.querySelector(`[name='name']`).value
     let image = document.querySelector(`[name='image']`).value
-    //empty object to populate
+
+    let nextId = (id)=>id+1;
     let toyElement = {}
-    //fetch existing array of objects from json file and make toyElement Id have the next id in json
+    //fetch existing array and make toyElement Id array.length plus 1
     fetch('http://localhost:3000/toys').then(res=>res.json()).then(data => toyElement['id'] = data.length + 1 );
       //continues making the card 
       toyElement['name'] = name;
       toyElement['image']=image;
-      toyElement['likes']="0"
+      toyElement['likes']=0
       
+      console.log(toyElement)
       //clear the input
       document.querySelector(`[name='name']`).value = ''
       document.querySelector(`[name='image']`).value = ''
-
-      // post the card and .then makecard on the response data
-      fetch(`http://localhost:3000/toys`,{
-      method: 'POST',
-      body: JSON.stringify(
-        toyElement
-      ),
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-    }).then(res=>res.json()).then(data=>makeCard(data))
       
+      //next is to push toyElement to json
+      //then run makecard(toyElement) >> that could be a problem as makecard is hidden within handleToyCard...which is bad anyway. Let's unpack all these functions.
       
       return toyElement
   }
-
+  //get the toy form, supress default and pass handleToySub
+  const toyForm = document.querySelector('form.add-toy-form')
+  toyForm.addEventListener('submit',(event)=>{event.preventDefault();handleToySub() })
  
+
+
+}
 
 
 
 //fetch and display toy cards
 function handleToyCards(){
-  //fetch the data and run makeCard() on it
-    fetch('http://localhost:3000/toys').then(res=>res.json()).then(data => {for (i in data) {makeCard(data[i])}})
-  
-  
-  }
 
-//function to actually make the card
-const makeCard = (element)=>{
+//code to actually make the card
+  const makeCard = (element)=>{
     // create the parent card
     const card = document.createElement('div')
     card.className = 'card'
@@ -115,7 +99,7 @@ const makeCard = (element)=>{
   
   //separate function to handle the patch request
   //.then(data => 'here I also updated the cards like text content)
-const handleLike = (id,newLikeCount)=>{
+  const handleLike = (id,newLikeCount)=>{
     
 
      fetch(`http://localhost:3000/toys/${id}`,{
@@ -127,10 +111,16 @@ const handleLike = (id,newLikeCount)=>{
         "Content-Type": "application/json",
         Accept: "application/json"
       },
-    }).then(res=>res.json()).then( data=> { let x = document.querySelector(`#number${id} p`) ; x.textContent = `${data['likes']} likes` }) 
+    }).then(res=>res.json()).then( data=> { let x = document.querySelector(`#number${id} p`) ; console.log(x); x.textContent = `${data['likes']} likes` }) 
      
 
 
   
   }
 
+
+//fetch the data and run makeCard() on it
+  fetch('http://localhost:3000/toys').then(res=>res.json()).then(data => {for (i in data) {makeCard(data[i])}})
+
+
+}
